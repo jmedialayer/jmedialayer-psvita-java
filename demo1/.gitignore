@@ -1,0 +1,16 @@
+/build/
+/gradle/
+/classes
+/.gradle/
+*.iws
+*.ipr
+*.iml
+*.sfo
+*.bin
+*.vpk
+*.out
+*.elf
+*.velf
+*.7z
+*.zip
+.idea

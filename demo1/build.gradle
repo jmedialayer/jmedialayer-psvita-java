@@ -1,0 +1,136 @@
+buildscript {
+	ext.VITASDK = System.getenv("VITASDK") ?: "C:/dev/psvita"
+	ext.VITAFTP = System.getenv("VITAFTP") ?: "192.168.1.130"
+	ext.NAME = "hellokotlinvita"
+	ext.VPKNAME = "${NAME}.vpk"
+	ext.kotlin_version = '1.1-M01'
+	ext.jtranscVersion = "0.4.0"
+	repositories {
+		maven {
+			url "http://dl.bintray.com/kotlin/kotlin-eap-1.1"
+		}
+		mavenLocal()
+		mavenCentral()
+	}
+	dependencies {
+		classpath "com.jtransc:jtransc-gradle-plugin:$jtranscVersion"
+		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+	}
+}
+
+group 'com.soywiz'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: "jtransc"
+apply plugin: 'application'
+
+//def jtranscVersion = "0.4.0"
+
+def TITLE_ID = "KOTLIN000"
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+mainClassName = "MainKotlin"
+
+repositories {
+	maven {
+		url "http://dl.bintray.com/kotlin/kotlin-eap-1.1"
+	}
+    mavenLocal()
+    mavenCentral()
+}
+
+sourceSets {
+    main.java.srcDirs = [ 'src' ]
+    main.resources.srcDirs = [ 'resources', 'assets' ]
+    test.java.srcDirs = [ 'test' ]
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+jtransc {
+	treeshaking = true
+}
+
+dependencies {
+    compile "com.jtransc:jtransc-rt-core:$jtranscVersion"
+	compile "org.jetbrains.kotlin:kotlin-stdlib:${kotlin_version}"
+	compile "org.jetbrains.kotlin:kotlin-runtime:${kotlin_version}"
+    testCompile 'junit:junit:4.12'
+}
+
+task deleteTemps(type:Delete) {
+	delete 'a.out', 'a.velf', 'eboot.bin', 'param.sfo', 'output.vpk'
+}
+
+task buildVita(dependsOn: ['gensrcCpp', 'deleteTemps']) << {
+	/*
+	exec {
+		executable 'C:/dev/psvita/bin/arm-vita-eabi-c++.exe'
+		args "-Wl,-q", "-O0", "-std=c++0x", "build/jtransc-cpp/program.cpp", "-lc", "-lSceKernel_stub", "-lSceDisplay_stub", "-lSceGxm_stub", "-lSceCtrl_stub", "-lSceTouch_stub"
+	}
+	*/
+
+	//println JTRANSC_LIBS
+
+	//println args2
+
+	exec {
+		executable "$VITASDK/bin/arm-vita-eabi-c++.exe"
+		args (["-Wl,-q", "-O3", "-std=c++0x", "build/jtransc-cpp/program.cpp", "-Iresources/includes", "-Lresources/libs"] + JTRANSC_LIBS.collect { "-l${it}" })
+		println(args)
+		//args "-Wl,-q", "-O2", "-s", "-std=c++0x", "build/jtransc-cpp/program.cpp", "-lc", "-lSceKernel_stub", "-lSceDisplay_stub", "-lSceGxm_stub", "-lSceCtrl_stub", "-lSceTouch_stub"
+		//args "-Wl,-q", "-O1", "-s", "-std=c++0x", "build/jtransc-cpp/program.cpp", "-lc", "-lSceKernel_stub", "-lSceDisplay_stub", "-lSceGxm_stub", "-lSceCtrl_stub", "-lSceTouch_stub"
+		//args "-Wl,-q", "-O1", "-std=c++0x", "build/jtransc-cpp/program.cpp", "-lc", "-lSceKernel_stub", "-lSceDisplay_stub", "-lSceGxm_stub", "-lSceCtrl_stub", "-lSceTouch_stub"
+	}
+
+	exec {
+		executable "$VITASDK/bin/vita-elf-create.exe"
+		args "a.out", "a.velf"
+	}
+
+	exec {
+		executable "$VITASDK/bin/vita-make-fself.exe"
+		args "-s", "a.velf", "eboot.bin"
+	}
+
+	exec {
+		executable "$VITASDK/bin/vita-mksfoex.exe"
+		args "-s", "TITLE_ID=${TITLE_ID}", "$NAME", "param.sfo"
+	}
+
+	exec {
+		executable "$VITASDK/bin/vita-pack-vpk.exe"
+		args "-s", "param.sfo", "-b", "eboot.bin", "-a", "resources/icon0.png=sce_sys/icon0.png", "$VPKNAME"
+	}
+}
+
+task uploadFtpAlone() << {
+	exec {
+		executable "curl"
+		args "-T", "eboot.bin", "-u", "any:any", "ftp://${VITAFTP}:1337/ux0:/app/${TITLE_ID}/eboot.bin"
+	}
+}
+
+task uploadFtp(dependsOn: ['buildVita', 'uploadFtpAlone'])
+
+task installFtp(dependsOn: ['buildVita']) << {
+	exec {
+		executable "curl"
+		args "-T", "$VPKNAME", "-u", "any:any", "ftp://${VITAFTP}:1337/ux0:/${VPKNAME}", "-Q", "-PROM ux0:/${VPKNAME}", "-Q", "-DELETE ux0:/${VPKNAME}"
+	}
+}
+
+/*
+task buildVitaAndUpload(dependsOn: ['buildVita']) << {
+	exec {
+		executable 'curl'
+		args "-T", "eboot.bin", "ftp://\$(PSVITAIP):1337/ux0:/app/\$(TITLE_ID)/"
+	}
+}
+*/
