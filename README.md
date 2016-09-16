@@ -8,6 +8,8 @@ have any delays. It works thanks to [JTransc](https://github.com/jtransc/jtransc
 the great new C++ target in 0.4.0 done by [dsp-omen](https://github.com/dsp-omen).
 For drawing without dependencies on psvita, it uses xerpi's [draw.c](https://github.com/xerpi/libftpvita/blob/master/sample/draw.c) from a sample in libftpvita, but you can hook any C library/code easily in order to for example run libvita2d or raw gxm calls.
 
+You can develop your application directly in intelliJ and test it using your favourite debugger, and then when ready compile it for the psvita and install it in just one click (`installFtp` gradle task).
+
 ![0.jpg](0.jpg)
 
 ## Run in the PSVita
