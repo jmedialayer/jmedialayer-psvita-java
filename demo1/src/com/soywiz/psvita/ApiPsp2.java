@@ -38,9 +38,9 @@ import java.io.FileNotFoundException;
 	"ScePgf_stub",
 	"SceTouch_stub",
 	"SceCommonDialog_stub",
-	"z",
-	"png",
-	"jpeg",
+	//"z",
+	//"png",
+	//"jpeg",
 	//"vita2d",
 })
 @JTranscAddFile(target = "cpp", prepend = "draw_include.c", process = true)
