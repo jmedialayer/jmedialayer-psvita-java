@@ -108,6 +108,8 @@ task uploadFtp(dependsOn: ['buildVita', 'uploadFtpAlone'])
 task installFtp(dependsOn: ['buildVita']) << {
 	exec {
 		executable "curl"
-		args "-T", "$VPKNAME", "-u", "any:any", "ftp://${VITAFTP}:1337/ux0:/${VPKNAME}", "-Q", "-PROM ux0:/${VPKNAME}", "-Q", "-DELETE ux0:/${VPKNAME}"
+		// DELETE doesn't seems to work. Don't know why
+		args "-T", "$VPKNAME", "-u", "any:any", "ftp://${VITAFTP}:1337/ux0:/${VPKNAME}", "-Q", "-PROM ux0:/${VPKNAME}"
+		//args "-T", "$VPKNAME", "-u", "any:any", "ftp://${VITAFTP}:1337/ux0:/${VPKNAME}", "-Q", "-PROM ux0:/${VPKNAME}", "-Q", "-DELETE ux0:/${VPKNAME}"
 	}
 }
