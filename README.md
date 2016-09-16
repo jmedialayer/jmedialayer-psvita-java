@@ -6,6 +6,8 @@ and could be easily ported to other platforms like 3DS among others.
 In PSVita/C++ it uses ARC instead of GC, so the performance is constant and doesn't
 have any delays.
 
+![0.jpg](0.jpg)
+
 ## Run in the PSVita
 
 Go to `demo1` directory, and with the vitasdk installed and `VITASDK` environment variable properly set, execute `gradlew buildVita`.
