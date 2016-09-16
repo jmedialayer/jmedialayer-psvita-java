@@ -69,43 +69,29 @@ task deleteTemps(type:Delete) {
 }
 
 task buildVita(dependsOn: ['gensrcCpp', 'deleteTemps']) << {
-	/*
 	exec {
-		executable 'C:/dev/psvita/bin/arm-vita-eabi-c++.exe'
-		args "-Wl,-q", "-O0", "-std=c++0x", "build/jtransc-cpp/program.cpp", "-lc", "-lSceKernel_stub", "-lSceDisplay_stub", "-lSceGxm_stub", "-lSceCtrl_stub", "-lSceTouch_stub"
-	}
-	*/
-
-	//println JTRANSC_LIBS
-
-	//println args2
-
-	exec {
-		executable "$VITASDK/bin/arm-vita-eabi-c++.exe"
+		executable "$VITASDK/bin/arm-vita-eabi-c++"
 		args (["-Wl,-q", "-O3", "-std=c++0x", "build/jtransc-cpp/program.cpp", "-Iresources/includes", "-Lresources/libs"] + JTRANSC_LIBS.collect { "-l${it}" })
 		println(args)
-		//args "-Wl,-q", "-O2", "-s", "-std=c++0x", "build/jtransc-cpp/program.cpp", "-lc", "-lSceKernel_stub", "-lSceDisplay_stub", "-lSceGxm_stub", "-lSceCtrl_stub", "-lSceTouch_stub"
-		//args "-Wl,-q", "-O1", "-s", "-std=c++0x", "build/jtransc-cpp/program.cpp", "-lc", "-lSceKernel_stub", "-lSceDisplay_stub", "-lSceGxm_stub", "-lSceCtrl_stub", "-lSceTouch_stub"
-		//args "-Wl,-q", "-O1", "-std=c++0x", "build/jtransc-cpp/program.cpp", "-lc", "-lSceKernel_stub", "-lSceDisplay_stub", "-lSceGxm_stub", "-lSceCtrl_stub", "-lSceTouch_stub"
 	}
 
 	exec {
-		executable "$VITASDK/bin/vita-elf-create.exe"
+		executable "$VITASDK/bin/vita-elf-create"
 		args "a.out", "a.velf"
 	}
 
 	exec {
-		executable "$VITASDK/bin/vita-make-fself.exe"
+		executable "$VITASDK/bin/vita-make-fself"
 		args "-s", "a.velf", "eboot.bin"
 	}
 
 	exec {
-		executable "$VITASDK/bin/vita-mksfoex.exe"
+		executable "$VITASDK/bin/vita-mksfoex"
 		args "-s", "TITLE_ID=${TITLE_ID}", "$NAME", "param.sfo"
 	}
 
 	exec {
-		executable "$VITASDK/bin/vita-pack-vpk.exe"
+		executable "$VITASDK/bin/vita-pack-vpk"
 		args "-s", "param.sfo", "-b", "eboot.bin", "-a", "resources/icon0.png=sce_sys/icon0.png", "$VPKNAME"
 	}
 }
@@ -125,12 +111,3 @@ task installFtp(dependsOn: ['buildVita']) << {
 		args "-T", "$VPKNAME", "-u", "any:any", "ftp://${VITAFTP}:1337/ux0:/${VPKNAME}", "-Q", "-PROM ux0:/${VPKNAME}", "-Q", "-DELETE ux0:/${VPKNAME}"
 	}
 }
-
-/*
-task buildVitaAndUpload(dependsOn: ['buildVita']) << {
-	exec {
-		executable 'curl'
-		args "-T", "eboot.bin", "ftp://\$(PSVITAIP):1337/ux0:/app/\$(TITLE_ID)/"
-	}
-}
-*/
