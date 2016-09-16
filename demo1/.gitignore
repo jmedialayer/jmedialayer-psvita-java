@@ -1,5 +1,4 @@
 /build/
-/gradle/
 /classes
 /.gradle/
 *.iws
