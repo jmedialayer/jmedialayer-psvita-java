@@ -4,7 +4,9 @@ This is a mixed Java+Kotlin demo that can run in the JVM, the browser and PSVita
 and could be easily ported to other platforms like 3DS among others.
 
 In PSVita/C++ it uses ARC instead of GC, so the performance is constant and doesn't
-have any delays.
+have any delays. It works thanks to [JTransc](https://github.com/jtransc/jtransc) +
+the great new C++ target in 0.4.0 done by [dsp-omen](https://github.com/dsp-omen).
+For drawing without dependencies on psvita, it uses xerpi's [draw.c](https://github.com/xerpi/libftpvita/blob/master/sample/draw.c) from a sample in libftpvita.
 
 ![0.jpg](0.jpg)
 
