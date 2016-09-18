@@ -2,7 +2,7 @@
 
 `demo2` available using jmedialayer (include png support). No external dependencies required (except for VITASDK):
 
-![](demo2/screenshot.png)
+![](demo2/screenshot.jpg)
 
 ## Updated: 09/18/2016
 
