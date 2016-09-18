@@ -1,5 +1,11 @@
 ## Updated: 09/18/2016
 
+`demo2` available using jmedialayer (include png support). No external dependencies required (except for VITASDK):
+
+![](demo2/screenshot.png)
+
+## Updated: 09/18/2016
+
 I have created a project called jmedialayer:
 https://github.com/jmedialayer/jmedialayer/tree/master
 
