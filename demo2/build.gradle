@@ -1,0 +1,130 @@
+buildscript {
+	ext.TITLE_ID = "JMELAY002"
+	ext.VITASDK = System.getenv("VITASDK") ?: "C:/dev/psvita"
+	ext.VITAFTP = System.getenv("VITAFTP") ?: "192.168.1.129"
+	ext.NAME = "jmedialayer-demo2"
+	ext.VPKNAME = "${NAME}.vpk"
+	ext.jtranscVersion = "0.4.0"
+	repositories {
+		mavenLocal()
+		mavenCentral()
+		jcenter()
+	}
+	dependencies {
+		classpath "com.jtransc:jtransc-gradle-plugin:$jtranscVersion"
+	}
+}
+
+group 'jmedialayer'
+version '0.1'
+
+apply plugin: 'java'
+apply plugin: "jtransc"
+apply plugin: 'application'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+	maven {
+		url "http://dl.bintray.com/soywiz/jmedialayer"
+	}
+}
+
+sourceSets {
+	main.java.srcDirs = ['src']
+	main.resources.srcDirs = ['resources', 'assets']
+	test.java.srcDirs = ['test']
+	test.resources.srcDirs = ['testresources', 'testassets']
+}
+
+dependencies {
+	compile "jmedialayer:jmedialayer:0.0.1"
+	testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+jtransc {
+	treeshaking = true
+	assets = ["assets"]
+}
+
+mainClassName = "jmedialayer.samples.Sample1"
+
+task deleteTemps(type: Delete) {
+	delete "${project.distsDir}/a.out", "${project.distsDir}/a.velf", "${project.distsDir}/eboot.bin", "${project.distsDir}/param.sfo", "${project.distsDir}/$VPKNAME"
+}
+
+task buildVitaElf(dependsOn: ['gensrcCpp', 'deleteTemps']) << {
+	exec {
+		executable "$VITASDK/bin/arm-vita-eabi-c++"
+		args(["-Wl,-q", "-o${project.distsDir}/a.out", "-O3", "-std=c++0x", "build/jtransc-cpp/program.cpp", "-Iresources/includes", "-Lresources/libs"] + JTRANSC_LIBS.collect {
+			"-l${it}"
+		})
+		println(args)
+	}
+}
+
+task buildVitaSelf(dependsOn: ['buildVitaElf']) << {
+	exec {
+		executable "$VITASDK/bin/vita-elf-create"
+		args "${project.distsDir}/a.out", "${project.distsDir}/a.velf"
+	}
+}
+
+task buildVitaEbootBin(dependsOn: ['buildVitaSelf']) << {
+	exec {
+		executable "$VITASDK/bin/vita-make-fself"
+		args "-s", "${project.distsDir}/a.velf", "${project.distsDir}/eboot.bin"
+	}
+}
+
+task buildVitaParamSfo() << {
+	exec {
+		executable "$VITASDK/bin/vita-mksfoex"
+		args "-s", "TITLE_ID=${TITLE_ID}", "$NAME", "${project.distsDir}/param.sfo"
+	}
+}
+
+task buildVitaVpk(type: Zip, dependsOn: ['buildVitaEbootBin', 'buildVitaParamSfo']) {
+	from("${project.distsDir}/param.sfo") {
+		into '/sce_sys'
+	}
+	from("assets") {
+		into '/'
+	}
+	from("${project.distsDir}/eboot.bin") {
+		into '/'
+	}
+
+	//destinationDir = '.'
+	archiveName = "$VPKNAME"
+	//baseName = 'output.vpk'
+
+}
+
+task buildVita(dependsOn: ['buildVitaVpk'])
+
+task uploadFtpAlone() << {
+	exec {
+		executable "curl"
+		args "-T", "${project.distsDir}/eboot.bin", "-u", "any:any", "ftp://${VITAFTP}:1337/ux0:/app/${TITLE_ID}/eboot.bin"
+	}
+}
+
+task installFtpAlone() << {
+	exec {
+		executable "curl"
+		// DELETE doesn't seems to work. Don't know why
+		args "-T", "${project.distsDir}/$VPKNAME", "-u", "any:any", "ftp://${VITAFTP}:1337/ux0:/${VPKNAME}", "-Q", "-PROM ux0:/${VPKNAME}"
+		//args "-T", "$VPKNAME", "-u", "any:any", "ftp://${VITAFTP}:1337/ux0:/${VPKNAME}", "-Q", "-PROM ux0:/${VPKNAME}", "-Q", "-DELETE ux0:/${VPKNAME}"
+	}
+}
+
+task uploadFtp(dependsOn: ['buildVita', 'uploadFtpAlone'])
+task installFtp(dependsOn: ['buildVita', 'installFtpAlone'])
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '3.0'
+}
