@@ -1,4 +1,4 @@
-## Updated: 09/18/2016
+## Updated: 09/19/2016
 
 `demo2` available using jmedialayer (include png support). No external dependencies required (except for VITASDK):
 
