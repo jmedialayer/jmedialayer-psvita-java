@@ -1,3 +1,14 @@
+## Updated: 09/18/2016
+
+I have created a project called jmedialayer:
+https://github.com/jmedialayer/jmedialayer/tree/master
+
+I'm going to work on this in my spare time, feel free to contribute.
+
+It aims to create a simple layer for graphics/audio and input like SDL but for Java that will provide several backends using jtransc to target browser, psvita, 3ds and so on.
+
+`demo1` will still be available as a raw example of generating C++, but will add new samples using jmedialayer as it they are available. Also I will create a gradle plugin to easily target psvita and 3ds.
+
 ## psvita-java
 
 This is a mixed Java+Kotlin demo that can run in the JVM, the browser and PSVita,
