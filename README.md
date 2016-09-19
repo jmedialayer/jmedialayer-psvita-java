@@ -1,7 +1,8 @@
 ## Updated: 09/19/2016
 
-`demo2` available using jmedialayer (include png support). No external dependencies required (except for VITASDK):
-`demo3` available using jmedialayer gradle plugin. Just required gradle. Gradle plugin will download VITASDK automatically.
+`demo2` available using jmedialayer (include png support). No external dependencies required (except for VITASDK).
+
+`demo3` available using jmedialayer + gradle plugin. Just requires gradle. Gradle plugin will download VITASDK automatically. Just supported x86/x64 windows/linux/mac.
 
 ![](demo2/screenshot.jpg)
 
