@@ -1,0 +1,60 @@
+buildscript {
+	repositories {
+		mavenLocal()
+		maven { url "http://dl.bintray.com/soywiz/jmedialayer" }
+		mavenCentral()
+	}
+	dependencies {
+		classpath "com.jtransc:jtransc-gradle-plugin:$jtranscVersion"
+		classpath "jmedialayer:jmedialayer-gradle-plugin:0.1"
+	}
+}
+
+group 'com.soywiz'
+version '0.1'
+
+apply plugin: 'java'
+apply plugin: "jtransc"
+apply plugin: 'application'
+apply plugin: 'jmedialayer'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+repositories {
+	mavenLocal()
+	maven {
+		url "http://dl.bintray.com/soywiz/jmedialayer"
+	}
+	mavenCentral()
+}
+
+sourceSets {
+	main.java.srcDirs = ['src']
+	main.resources.srcDirs = ['resources', 'assets']
+	test.java.srcDirs = ['test']
+	test.resources.srcDirs = ['testresources', 'testassets']
+}
+
+dependencies {
+	compile "jmedialayer:jmedialayer:0.1"
+	testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+jtransc {
+	treeshaking = true
+	assets = ["assets"]
+}
+
+jmedialayer {
+	//vitaFtp = "192.168.1.130"
+	//vitaSdk = "c:/dev/vitasdk"
+	name = rootProject.name
+	titleId = "SOYWIZ003" // 9 characters
+}
+
+mainClassName = "jmedialayer.samples.Sample1"
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '3.0'
+}
